@@ -27,7 +27,7 @@ VLM/
 │   ├── vlm_baseline.py   ← 核心接口，组员B只调这个
 │   ├── test_clip.py      ← 验证脚本
 │   └── __init__.py
-├── attacks/          # 组员A：对抗补丁生成
+├── attacks/          # 对抗补丁生成
 │   ├── digital_patch.py
 │   └── __init__.py
 ├── defense/          # 组员B：防御代码
