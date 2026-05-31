@@ -1,0 +1,3 @@
+https://github.com/David-FR/VLMsPatchAttack/blob/main/dolphins/dolphin_patch.py
+这里用的模型是Dolphin，Loss函数也要改
+主要借鉴其中的EoT模块（实现了模拟物理世界的空间抖动颜色抖动）
