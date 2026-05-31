@@ -1,0 +1,37 @@
+﻿# ==========================================
+# 大创项目：面向VLM的物理域对抗补丁鲁棒性增强
+# 基线实验配置
+# ==========================================
+
+model:
+  id: "openai/clip-vit-base-patch32"
+  device: "cpu"  # cpu / cuda
+
+attack:
+  patch_size: [64, 64]       # 补丁尺寸 (H, W)
+  num_patches_per_image: 5   # 每张图生成几个变体
+  seed: 42                   # 随机种子
+
+defense:
+  enabled: false             # 组员B开发后改为 true
+  method: "yolo_detect_lama_repair"  # 防御方法名
+
+eval:
+  candidate_labels:
+    - "a stop sign"
+    - "a speed limit sign"
+    - "a yield sign"
+    - "a traffic light"
+    - "a blank sign"
+    - "a person"
+    - "a car"
+    - "a bicycle"
+
+data:
+  input_dir: "data/clean"      # 干净样本目录
+  patched_dir: "data/patched"  # 对抗样本输出目录
+  defended_dir: "data/defended" # 防御后输出目录
+
+experiment:
+  name: "baseline_001"
+  note: "CLIP ViT-B/32 + 随机补丁 Baseline"

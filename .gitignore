@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# ??????? Git?
+*.bin
+*.safetensors
+*.pth
+*.ckpt
+*.onnx
+*.h5
+
+# HuggingFace ??
+hf_cache/
+
+# ???????
+data/clean/*
+data/patched/*
+data/defended/*
+
+# ??
+venv/
+.venv/
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# ????
+experiments/*.log
