@@ -12,42 +12,42 @@
 | 测试用的干净图片、补丁图片 | data/（不入 Git） |
 | 每次实验的参数、结果、备注 | experiments/ |
 | 装了新依赖包 | requirements.txt |
-| 项目介绍、跑法、分工说明 | README.md |
+| 项目介绍、跑法、分工说明 | README.md、TEAM.md |
 
 ---
 
-## 一、models/ —— VLM 模型相关，组员A 维护
+## 一、models/ —— VLM 模型相关，组员1 维护
 
 **放什么：** 所有和 VLM 模型加载、推理、接口封装有关的代码。
 
 **具体例子：**
-- 加载 CLIP / LLaVA 模型的代码 → models/vlm_baseline.py
-- 封装 classify(image) 统一推理接口 → models/vlm_baseline.py
+- 加载 CLIP / LLaVA 模型的代码 -> models/vlm_baseline.py
+- 封装 classify(image) 统一推理接口 -> models/vlm_baseline.py
 - 切换模型（CLIP → BLIP → 其他）的适配代码 → models/ 里新建文件
-- 验证模型能跑通的测试脚本 → models/test_clip.py
-- 导出给外部用的 __init__.py → models/__init__.py
+- 验证模型能跑通的测试脚本 -> models/test_clip.py
+- 导出给外部用的 __init__.py -> models/__init__.py
 
-**规则：** 组员A 维护，别人只 import，不直接改。
+**规则：** 组员1 维护，别人只 import，不直接改核心接口；确实要改时先在群里说明。
 
 ---
 
-## 二、attacks/ —— 对抗攻击相关，A+B 都可写
+## 二、attacks/ —— 对抗攻击相关，组员2 维护
 
 **放什么：** 所有生成对抗样本/补丁的代码。攻击方法、变换策略、补丁合成。
 
 **具体例子：**
-- 随机补丁 Baseline → attacks/digital_patch.py（组员A 写）
-- AdvPatch 复现代码 → attacks/advpatch.py（组员B 写，新建文件！）
+- 随机补丁 Baseline → attacks/digital_patch.py（组员2 写）
+- AdvPatch 复现代码 → attacks/advpatch.py（组员2 写，新建文件）
 - EOT 旋转/亮度/缩放变换 → attacks/eot_transform.py（谁写谁建）
 - PGD / FGSM 等白盒攻击 → attacks/whitebox_attack.py
 - 补丁粘贴函数（apply_patch_to_image） → attacks/digital_patch.py
 - 批量生成攻击样本的脚本 → attacks/generate_samples.py
 
-**规则：** 各人建各人的文件，互不改对方代码。写完在 attacks/__init__.py 加 import。
+**规则：** 组员2 主维护，组员1 负责技术 review。其他人如果只是试验，可以新建文件，不直接改攻击主流程。
 
 ---
 
-## 三、defense/ —— 防御相关，组员B 维护
+## 三、defense/ —— 防御相关，组员3 维护
 
 **放什么：** 所有防御/检测/修复/净化的代码。从检测补丁到修复图像到端到端防御。
 
@@ -59,12 +59,12 @@
 - 统一防御入口 defend(image) → defense/ 里实现，__init__.py 导出
 - Jetson 部署脚本 → defense/deploy_jetson.py
 
-**接口约定（A 和 B 的边界）：**
-- B 的输入：一张被攻击的图片 (H, W, 3) uint8 numpy array
-- B 的输出：防御处理后的图片 (H, W, 3) uint8 numpy array
-- A 调 B：from defense import defend; clean = defend(adv_image)
+**接口约定（攻击和防御的边界）：**
+- 组员3 的输入：一张被攻击的图片 (H, W, 3) uint8 numpy array
+- 组员3 的输出：防御处理后的图片 (H, W, 3) uint8 numpy array
+- 组员1/2 调用防御模块：from defense import defend; clean = defend(adv_image)
 
-**规则：** 组员B 维护，接口定了之后 A 只调 defend()。
+**规则：** 组员3 维护，接口定了之后其他成员只调 defend()。
 
 ---
 
@@ -79,7 +79,7 @@
 - 推理延迟测试 → eval/metrics.py
 - 画对比图的脚本 → eval/visualize.py
 
-**规则：** 共用的，改了要通知所有人。加新指标可以，别删旧指标。
+**规则：** 组员1 负责把关，组员2/3/5 都可以补充指标。改了要通知所有人，加新指标可以，别删旧指标。
 
 ---
 ## 五、configs/ —— 实验配置，共用
@@ -91,7 +91,7 @@
 - EOT 实验的旋转范围、亮度范围 → configs/eot_exp.yaml
 - 防御实验的方法选择、阈值 → configs/defense_exp.yaml
 
-**规则：** 每次新实验，复制 baseline.yaml 改参数另存。不要覆盖别人的配置。
+**规则：** 组员1 负责主配置，组员2/3/5 做实验时可以复制 baseline.yaml 改参数另存。不要覆盖别人的配置。
 
 ---
 ## 六、data/ —— 图片数据，不入 Git
@@ -103,7 +103,7 @@
 - data/patched/ → 加了补丁后的图片（跑 attacks/ 生成）
 - data/defended/ → 防御处理后的图片（跑 defense/ 生成）
 
-**规则：** 图片不传 Git。组员C 负责采集和整理。
+**规则：** 图片不传 Git。组员5 负责采集和整理，组员2/3 需要样本时先和组员5 对齐命名和来源。
 
 ---
 ## 七、experiments/ —— 实验日志
@@ -118,7 +118,7 @@
 - 结果表格（ASR、准确率、延迟）
 - 备注（发现的问题、下一步计划）
 
-**规则：** 把实验结果写在这里，不要堆到 README 里。
+**规则：** 把实验结果写在这里，不要堆到 README 里。组员5 负责整理实验记录，组员4 负责检查记录是否完整。
 
 ---
 ## 八、根目录文件
@@ -126,6 +126,7 @@
 | 文件 | 作用 | 什么时候改 |
 |------|------|-----------|
 | README.md | 项目说明书：怎么跑、谁干什么 | 加了新功能/变了流程时更新 |
+| TEAM.md | 团队长期分工和协作机制 | 分工调整时更新 |
 | USAGE.md | 本文件：目录使用规则 | 规则变了时更新 |
 | requirements.txt | Python 依赖列表 | 装了新包时加一行 |
 | setup.bat | 环境启动脚本 | 环境配置变了时更新 |
@@ -149,8 +150,22 @@
 **场景5：我改了接口（会影响别人）**
 → 改代码 → 更新 README.md 说明 → 群里通知 → commit → push
 
-**场景6：组员B 写了防御代码**
+**场景6：组员3 写了防御代码**
 → 在 defense/ 里写 detector.py / repair.py → 更新 defense/__init__.py → git add defense/ → commit → push
 
 **场景7：我想加测试图片**
 → 放到 data/clean/ → 不进 Git，本地用 → 如果需要别人也用，用网盘/群文件传
+
+---
+
+## 十、5 人分工和目录对应关系
+
+| 成员 | 主要职责 | 重点目录/文件 |
+|------|----------|---------------|
+| 组员1 | 技术负责人、模型基线、主线整合 | models/、eval/、configs/、README.md |
+| 组员2 | 对抗攻击、补丁生成、攻击样本 | attacks/、experiments/ |
+| 组员3 | 防御算法、检测修复、净化流程 | defense/、experiments/ |
+| 组员4 | 项目统筹、文档、答辩材料 | README.md、TEAM.md、USAGE.md、experiments/ |
+| 组员5 | 数据整理、实验执行、图表统计 | data/、experiments/、eval/ |
+
+**统一规则：** 每个人至少维护自己负责的目录；跨目录改动要先说明，避免别人不知道接口或文件位置发生变化。
