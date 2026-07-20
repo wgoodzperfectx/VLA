@@ -3,30 +3,29 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 
-# ??????? Git?
+# Model checkpoints and caches
 *.bin
 *.safetensors
 *.pth
 *.ckpt
 *.onnx
 *.h5
-
-# HuggingFace ??
 hf_cache/
 
-# ???????
+# Local datasets, generated observations, and rollout logs
 data/clean/*
 data/patched/*
 data/defended/*
+data/attacked/*
+logs/
+results/
+experiments/*.log
 
-# ??
+# Environments and local configuration
 venv/
 .venv/
 .env
 
-# IDE
+# Editors
 .vscode/
 .idea/
-
-# ????
-experiments/*.log

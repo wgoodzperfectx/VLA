@@ -1,2 +1,5 @@
-﻿# models/__init__.py
-from .vlm_baseline import classify, get_device, get_model_info
+# Current VLA interface. Legacy CLIP helpers remain available explicitly from
+# models.vlm_baseline without being imported (and initialized) here.
+from .vla_baseline import OpenVLABaseline, OpenVLAConfig
+
+__all__ = ["OpenVLABaseline", "OpenVLAConfig"]

@@ -1,0 +1,29 @@
+# VLA phase-1 baseline: OpenVLA reference + LIBERO evaluation
+model:
+  family: "openvla"
+  id: "openvla/openvla-7b"
+  device: "cuda:0"
+  dtype: "bfloat16"
+  unnorm_key: "bridge_orig"
+  action_dim: 7
+
+benchmark:
+  primary: "LIBERO"
+  robustness: "LIBERO-Plus"
+  suites: ["libero_spatial", "libero_object", "libero_goal", "libero_10"]
+  episodes_per_task: 20
+  seed: 42
+
+conditions: ["clean", "attacked", "defended"]
+
+metrics:
+  primary: "task_success_rate"
+  secondary: ["mean_action_l2", "max_action_l2"]
+
+attack:
+  type: "physical_patch"
+  enabled: false
+
+defense:
+  type: "visual_frontend"
+  enabled: false

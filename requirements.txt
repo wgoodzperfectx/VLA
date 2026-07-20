@@ -1,6 +1,9 @@
 torch>=2.0
 transformers>=4.40
 huggingface_hub
+accelerate
+timm
+tokenizers
 pillow
 numpy
 pyyaml

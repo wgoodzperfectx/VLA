@@ -4,6 +4,33 @@
 import numpy as np
 from typing import List
 
+
+def compute_task_success_rate(successes: List[bool]) -> dict:
+    """Compute rollout-level task success rate, the primary VLA metric."""
+    total = len(successes)
+    success = sum(bool(value) for value in successes)
+    return {
+        "task_success_rate": round(success / total, 4) if total else 0.0,
+        "total": total,
+        "success": success,
+    }
+
+
+def compute_action_deviation(clean_actions, evaluated_actions) -> dict:
+    """Compare aligned clean and attacked/defended action trajectories."""
+    clean = np.asarray(clean_actions, dtype=float)
+    evaluated = np.asarray(evaluated_actions, dtype=float)
+    if clean.shape != evaluated.shape:
+        raise ValueError("action trajectories must have identical shapes")
+    if clean.ndim != 2 or clean.shape[0] == 0:
+        raise ValueError("action trajectories must have shape (steps, action_dim)")
+
+    per_step_l2 = np.linalg.norm(evaluated - clean, axis=1)
+    return {
+        "mean_action_l2": round(float(np.mean(per_step_l2)), 4),
+        "max_action_l2": round(float(np.max(per_step_l2)), 4),
+    }
+
 def compute_asr(
     clean_preds: List[str],
     adv_preds: List[str],

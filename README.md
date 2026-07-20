@@ -1,111 +1,96 @@
-﻿# 面向视觉语言模型的物理域对抗补丁鲁棒性增强方法研究
+# 面向 VLA 的物理域对抗补丁鲁棒性增强
 
-大创项目 · 成都信息工程大学 网安学院
+大创项目 · 成都信息工程大学网安学院
 
+本项目研究视觉-语言-动作（VLA）模型在物理域对抗补丁下的任务可靠性。主线已经从“CLIP/VLM 分类是否出错”迁移为“视觉观测 + 语言指令是否产生安全、有效的机器人动作”。旧 CLIP 基线保留在 `models/vlm_baseline.py`，仅用于历史实验兼容。
 
-## 快速开始
+## 当前 baseline
+
+```text
+视觉观测 + 语言指令
+        -> OpenVLA / OpenVLA-OFT
+        -> 动作或动作块
+        -> LIBERO rollout
+        -> 任务成功率与动作轨迹偏差
+```
+
+- 主功能基准：OpenVLA-OFT + LIBERO
+- 架构参照：OpenVLA 7B
+- 鲁棒性基准：LIBERO-Plus 七类扰动
+- 实验条件：clean / attacked / defended
+- 主指标：任务成功率；辅指标：动作 L2 偏差
+
+完整选择依据、威胁模型和最小实验设计见 [组员 1 VLA baseline](experiments/week1_组员1_vla_baseline.md)。
+
+## 快速验证
+
+以下命令只验证统一动作接口，不下载 7B 权重：
 
 ```bash
-# 1. 克隆仓库
-git clone https://github.com/wgoodzperfectx/VLM.git
-cd VLM
-
-# 2. 安装依赖
 pip install -r requirements.txt
-
-# 3. 设置环境（模型缓存到 D 盘）
-setup.bat
-
-# 4. 验证基线
-python models/test_clip.py
+python models/test_vla_interface.py
 ```
+
+真实 OpenVLA 推理需要合适的 CUDA 环境、模型权重以及与机器人数据匹配的动作反归一化键：
+
+```python
+from models import OpenVLABaseline
+
+policy = OpenVLABaseline()
+action = policy.predict_action("observation.png", "pick up the red cup")
+print(action)  # 7-DoF action
+```
+
+正式 LIBERO rollout 建议依照 OpenVLA-OFT 官方 Linux 环境配置执行。本仓库的 Windows smoke test 不是实际任务成功率实验。
 
 ## 项目结构
 
+```text
+VLA/
+├── models/
+│   ├── vla_baseline.py          # 当前 OpenVLA 动作推理接口
+│   ├── test_vla_interface.py    # 无权重离线接口测试
+│   └── vlm_baseline.py          # 旧 CLIP 分类基线（兼容）
+├── attacks/                     # patch / EOT / 攻击流程
+├── defense/                     # 视觉前端鲁棒增强
+├── eval/metrics.py              # 任务成功率与动作偏差等指标
+├── configs/vla_baseline.yaml    # VLA 第一阶段实验配置
+├── data/                        # 本地观测数据，不提交大文件
+├── experiments/                 # 研究说明与实验记录
+├── TEAM.md
+└── USAGE.md
 ```
-VLM/
-├── models/           # 组员A：VLM 基线 + 推理接口
-│   ├── vlm_baseline.py   ← 核心接口，组员B只调这个
-│   ├── test_clip.py      ← 验证脚本
-│   └── __init__.py
-├── attacks/          # 对抗补丁生成
-│   ├── digital_patch.py
-│   └── __init__.py
-├── defense/          # 组员B：防御代码
-│   └── __init__.py        ← 待填充
-├── eval/             # 共用：评估指标
-│   ├── metrics.py
-│   └── __init__.py
-├── configs/          # 实验配置
-│   └── baseline.yaml
-├── data/             # 测试图片（不传 Git）
-├── experiments/      # 实验记录
-├── requirements.txt
-├── setup.bat
-├── .gitignore
-└── README.md
+
+## 统一接口
+
+模型侧只暴露动作预测：
+
+```python
+action = policy.predict_action(image, instruction)
 ```
+
+防御侧保持图像接口，便于插入 VLA 前端：
+
+```python
+def defend(image):
+    """(H, W, 3) uint8 -> (H, W, 3) uint8"""
+```
+
+评估必须运行配对 rollout。相同任务、初始状态和 seed 下，比较原图、同一 patch 图和防御后的 patch 图；不能再用图像分类准确率代替 VLA 任务表现。
 
 ## 团队分工
 
-当前项目共有 5 名成员，建议采用“3 名技术主力 + 1 名统筹文档 + 1 名实验数据支持”的配置。详细分工和协作机制见 [TEAM.md](./TEAM.md)。
+- 组员 1：VLA baseline、主线整合、接口与最终 review
+- 组员 2：VLA patch 攻击、威胁模型与攻击复现
+- 组员 3：视觉前端防御、对抗微调与鲁棒增强
+- 组员 4：项目统筹、文档、报告与答辩
+- 组员 5：环境、rollout 日志、批量实验与结果统计
 
-简版分工如下：
+详细协作边界见 [TEAM.md](TEAM.md)，目录规则见 [USAGE.md](USAGE.md)。
 
-- **组员1**：技术负责人，负责主线整合、接口统一、最终 review
-- **组员2**：攻击方向，负责补丁、EOT、攻击样本
-- **组员3**：防御方向，负责检测、修复、净化
-- **组员4**：统筹 / 文档 / 答辩，负责排期、记录、汇报材料
-- **组员5**：实验 / 数据 / 运行支持，负责数据整理、批量实验、图表
+## 参考项目
 
-## 接口约定（组员A ↔ 组员B）
-
-组员 B 只需要知道一个函数：
-
-```python
-from models.vlm_baseline import classify
-
-result = classify("image.jpg", candidate_labels=["a stop sign", ...])
-# result = {"top1_label": ..., "top1_score": ..., "top5": ..., "embedding": ...}
-```
-
-B 在 `defense/` 里写防御函数，签名约定：
-
-```python
-def defend(image: np.ndarray) -> np.ndarray:
-    """输入：(H,W,3) uint8 → 输出：(H,W,3) uint8"""
-    ...
-```
-
-评估时串联：
-
-```python
-from models.vlm_baseline import classify
-from defense.xxx import defend
-from eval.metrics import compute_defense_metrics
-
-clean_pred = classify(clean_img)["top1_label"]
-adv_pred = classify(adv_img)["top1_label"]
-defended_img = defend(adv_img)
-defended_pred = classify(defended_img)["top1_label"]
-
-metrics = compute_defense_metrics(
-    [clean_pred], [adv_pred], [defended_pred], ["stop sign"]
-)
-```
-
-## 基线数据（2026-05-31）
-
-| 项目 | 数值 |
-|------|------|
-| 模型 | CLIP ViT-B/32 (151M) |
-| 推理速度 | 53ms (18.8 FPS) CPU |
-| 缓存位置 | D:\40_Coursework\hf_cache |
-
-## 组员分工
-
-- **组员1**：VLM 基线、主线整合、接口统一
-- **组员2**：对抗攻击、补丁生成、EOT 变换
-- **组员3**：防御算法、净化流程、效果对比
-- **组员4**：项目统筹、文档、答辩、展示
-- **组员5**：实验执行、数据整理、结果统计
+- [OpenVLA](https://github.com/openvla/openvla)
+- [OpenVLA-OFT](https://github.com/moojink/openvla-oft)
+- [LIBERO](https://github.com/Lifelong-Robot-Learning/LIBERO)
+- [LIBERO-Plus](https://github.com/sylvestf/LIBERO-plus)

@@ -1,31 +1,19 @@
 @echo off
-:: ==========================================
-:: ???? - ??????
-:: ???????????
-:: ==========================================
-
-:: 1. ?? HuggingFace ??? D ???? C ??
+chcp 65001 >nul
 set HF_HOME=D:\40_Coursework\hf_cache
 set HF_HUB_DISABLE_SYMLINKS_WARNING=1
 
-:: 2. ?? Python ??????? venv?
-:: ????? Python?torch/transformers ???
-:: ??????????????
-:: call D:\40_Coursework\venv\Scripts\activate.bat
-
-:: 3. ??????
 echo ========================================
-echo  ?????????
+echo VLA project environment
 echo ========================================
-echo  HF_HOME  = %HF_HOME%
-echo  Python   = 
+echo HF_HOME = %HF_HOME%
 python --version 2>nul
-echo  torch    = 
-python -c "import torch; print('  ', torch.__version__)" 2>nul
-echo ========================================
-echo  ????:
-echo    python test_clip.py      ?? VLM ??
-echo    python test_adv_patch.py ??????
+python -c "import torch; print('torch =', torch.__version__); print('cuda =', torch.cuda.is_available())" 2>nul
+echo.
+echo Offline interface test:
+echo   python models\test_vla_interface.py
+echo.
+echo Real OpenVLA/LIBERO rollout requires a compatible Linux CUDA environment.
 echo ========================================
 
 cmd /k
